@@ -1,0 +1,3 @@
+- Add missing operators (Mult, Div, Mod, RotateLeft etc.)
+- Do proper unit testing of all operators.
+- Make a proper formatter.

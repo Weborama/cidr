@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "YcDApHEAob1Yw8GTvI8BORRzH3Y=",
+			"path": "github.com/Weborama/uint128",
+			"revision": "0e4381b7bc38949cd4f12e9c6207b84abef5722c",
+			"revisionTime": "2017-11-28T09:32:56Z"
+		},
+		{
+			"checksumSHA1": "mrz/kicZiUaHxkyfvC/DyQcr8Do=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "ecdeabc65495df2dec95d7c4a4c3e021903035e5",
+			"revisionTime": "2017-10-02T20:02:53Z"
+		}
+	],
+	"rootPath": "github.com/Weborama/cidr"
+}
