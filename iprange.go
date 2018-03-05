@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package cidr
+package cidr // import "github.com/weborama/cidr"
 
 import (
 	"encoding/binary"
 	"math/bits"
 	"net"
 
-	"github.com/Weborama/uint128"
+	"github.com/weborama/uint128"
 )
 
 // IPv4ToUint32 converts an IPv4 representation to uint32

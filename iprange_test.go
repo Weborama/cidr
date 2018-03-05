@@ -9,9 +9,9 @@ import (
 	"net"
 	"testing"
 
-	"github.com/Weborama/cidr"
-	"github.com/Weborama/uint128"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/weborama/cidr"
+	"github.com/weborama/uint128"
 )
 
 func TestRangeNotIPv4(t *testing.T) {
