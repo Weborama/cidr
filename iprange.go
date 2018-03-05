@@ -2,86 +2,47 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package cidr
+package cidr // import "github.com/weborama/cidr"
 
 import (
+	"encoding/binary"
 	"math/bits"
 	"net"
 
-	"github.com/Weborama/uint128"
+	"github.com/weborama/uint128"
 )
 
 // IPv4ToUint32 converts an IPv4 representation to uint32
-func IPv4ToUint32(ip net.IP) (i uint32) {
-	i = uint32(ip[0])<<24 | uint32(ip[1])<<16 | uint32(ip[2])<<8 | uint32(ip[3])
-	return
+func IPv4ToUint32(ip net.IP) uint32 {
+	if len(ip) == 16 {
+		return binary.BigEndian.Uint32(ip[12:16])
+	}
+	return binary.BigEndian.Uint32(ip)
 }
 
-// Uint32ToIPv4 converts an Uint32 back to IPv4 representation
-func Uint32ToIPv4(i uint32) net.IP {
-	return net.IPv4(byte(i>>24)&0xFF, byte(i>>16)&0xFF, byte(i>>8)&0xFF, byte(i&0xFF))
+// Uint32ToIPv4 converts an uint32 back to IPv4 representation
+func Uint32ToIPv4(i uint32) (ip net.IP) {
+	ip = make(net.IP, net.IPv4len)
+	binary.BigEndian.PutUint32(ip, i)
+	return ip
 }
 
-// IPv6ToUint128Alt converts an IPv6 representation to uint32
-// func IPv6ToUint128Alt(ip net.IP) (o uint128.Uint128) {
-// 	var i uint
-// 	for i = 0; i < 16; i++ {
-// 		if i < 8 {
-// 			b := (8 - i - 1) * 8
-// 			o.H |= uint64(ip[i]) << b
-// 		} else {
-// 			b := (16 - i - 1) * 8
-// 			o.L |= uint64(ip[i]) << b
-// 		}
-// 	}
-// 	return
-// }
-
-// IPv6ToUint128 converts an IPv6 representation to uint32
+// IPv6ToUint128 converts an IPv6 representation to uint128.Uint128
 func IPv6ToUint128(ip net.IP) uint128.Uint128 {
 	return uint128.Uint128{
-		H: uint64(ip[0])<<56 | uint64(ip[1])<<48 | uint64(ip[2])<<40 | uint64(ip[3])<<32 | uint64(ip[4])<<24 | uint64(ip[5])<<16 | uint64(ip[6])<<8 | uint64(ip[7])<<0,
-		L: uint64(ip[8])<<56 | uint64(ip[9])<<48 | uint64(ip[10])<<40 | uint64(ip[11])<<32 | uint64(ip[12])<<24 | uint64(ip[13])<<16 | uint64(ip[14])<<8 | uint64(ip[15])<<0,
+		H: binary.BigEndian.Uint64(ip[0:8]),
+		L: binary.BigEndian.Uint64(ip[8:16]),
 	}
 }
 
-// Uint128ToIPv6Alt converts an Uint32 back to IPv4 representation
-// func Uint128ToIPv6Alt(x uint128.Uint128) net.IP {
-// 	ip := make(net.IP, net.IPv6len)
-// 	var i uint
-// 	for i = 0; i < 16; i++ {
-// 		if i < 8 {
-// 			b := (8 - i - 1) * 8
-// 			ip[i] = byte(x.H>>b) & 0xFF
-// 		} else {
-// 			b := (16 - i - 1) * 8
-// 			ip[i] = byte(x.L>>b) & 0xFF
-// 		}
-// 	}
-// 	return ip
-// }
-
-// Uint128ToIPv6 converts an Uint32 back to IPv4 representation
+// Uint128ToIPv6 converts an uint128.Uint128 back to IPv4 representation
 func Uint128ToIPv6(x uint128.Uint128) (ip net.IP) {
 	ip = make(net.IP, net.IPv6len)
-	ip[0] = byte(x.H>>56) & 0xFF
-	ip[1] = byte(x.H>>48) & 0xFF
-	ip[2] = byte(x.H>>40) & 0xFF
-	ip[3] = byte(x.H>>32) & 0xFF
-	ip[4] = byte(x.H>>24) & 0xFF
-	ip[5] = byte(x.H>>16) & 0xFF
-	ip[6] = byte(x.H>>8) & 0xFF
-	ip[7] = byte(x.H>>0) & 0xFF
-	ip[8] = byte(x.L>>56) & 0xFF
-	ip[9] = byte(x.L>>48) & 0xFF
-	ip[10] = byte(x.L>>40) & 0xFF
-	ip[11] = byte(x.L>>32) & 0xFF
-	ip[12] = byte(x.L>>24) & 0xFF
-	ip[13] = byte(x.L>>16) & 0xFF
-	ip[14] = byte(x.L>>8) & 0xFF
-	ip[15] = byte(x.L>>0) & 0xFF
+	binary.BigEndian.PutUint64(ip[0:8], x.H)
+	binary.BigEndian.PutUint64(ip[8:16], x.L)
 	return ip
 }
+
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -92,12 +53,12 @@ func min(a, b int) int {
 // IPRange2CIDR returns a slice of CIDR for the provided IP range.
 // Returns nil if IP order is wrong.
 func IPRange2CIDR(startIP, endIP net.IP) []net.IPNet {
-	startIP, endIP = startIP.To16(), endIP.To16()
-	if len(startIP) == net.IPv4len && len(endIP) == net.IPv4len {
-		return IPv4Range2CIDR(startIP, endIP)
+	//startIP, endIP = startIP.To16(), endIP.To16()
+	if startIPv4, endIPv4 := startIP.To4(), endIP.To4(); startIPv4 != nil && endIPv4 != nil {
+		return IPv4Range2CIDR(startIPv4, endIPv4)
 	}
-	if startIP != nil && endIP != nil {
-		return IPv6Range2CIDR(startIP, endIP)
+	if startIPv6, endIPv6 := startIP.To16(), endIP.To16(); startIPv6 != nil && endIPv6 != nil {
+		return IPv6Range2CIDR(startIPv6, endIPv6)
 	}
 	return nil
 }

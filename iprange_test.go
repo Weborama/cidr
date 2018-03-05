@@ -9,9 +9,10 @@ import (
 	"net"
 	"testing"
 
-	"github.com/Weborama/cidr"
-	"github.com/Weborama/uint128"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/assert"
+	"github.com/weborama/cidr"
+	"github.com/weborama/uint128"
 )
 
 func TestRangeNotIPv4(t *testing.T) {
@@ -30,7 +31,6 @@ func TestRangeWrongOrder(t *testing.T) {
 	if result != nil {
 		t.Fatal("Providing addresses in the wrong order should return nil")
 	}
-
 }
 
 func TestIPv4Range2CIDR(t *testing.T) {
@@ -96,30 +96,52 @@ func TestIPv4Range2CIDR(t *testing.T) {
 		},
 	}
 
-	var cidrs []net.IPNet
+	envs := []struct {
+		label    string
+		getRange func(startIP, endIP net.IP) []net.IPNet
+	}{
+		{
+			label:    "IPv4Range2CIDR",
+			getRange: cidr.IPv4Range2CIDR,
+		},
+		{
+			label:    "IPRange2CIDR",
+			getRange: cidr.IPRange2CIDR,
+		},
+	}
 
 	for _, testCase := range testCases {
-		t.Run(fmt.Sprintf("Range_%s-%s-%d", testCase.startIP, testCase.endIP, testCase.numExpected), func(t *testing.T) {
-			cidrs = cidr.IPv4Range2CIDR(testCase.startIP, testCase.endIP)
-			if testCase.numExpected != len(cidrs) {
-				t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
-			} else if len(testCase.expected) != 0 && len(testCase.expected) == len(cidrs) {
-				for i, expected := range testCase.expected {
-					if expected != cidrs[i].String() {
-						t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidrs[i].String())
+		for _, env := range envs {
+			t.Run(fmt.Sprintf("Range-%s_%s-%s-%d", env.label, testCase.startIP, testCase.endIP, testCase.numExpected), func(t *testing.T) {
+				cidrs := env.getRange(testCase.startIP, testCase.endIP)
+
+				for _, cidr := range cidrs {
+					_, bits := cidr.Mask.Size()
+					assert.Equal(t, 32, bits)
+				}
+
+				if testCase.numExpected != len(cidrs) {
+					t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
+				} else if len(testCase.expected) != 0 && assert.Equal(t, len(testCase.expected), len(cidrs)) {
+					for i, expected := range testCase.expected {
+						cidr := cidrs[i]
+						if expected != cidr.String() {
+							t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidr.String())
+						}
 					}
 				}
-			}
-		})
+			})
+		}
 	}
 }
 
 func TestIPv6Range2CIDR(t *testing.T) {
 	testCases := []struct {
-		startIP     net.IP
-		endIP       net.IP
-		numExpected int
-		expected    []string
+		startIP         net.IP
+		endIP           net.IP
+		numExpected     int
+		expected        []string
+		reducedMaskSize bool
 	}{
 		{
 			// Simple case
@@ -129,6 +151,7 @@ func TestIPv6Range2CIDR(t *testing.T) {
 			expected: []string{
 				"192.168.0.0/31",
 			},
+			reducedMaskSize: true,
 		},
 		{
 			// Simple case (for code coverage)
@@ -138,12 +161,15 @@ func TestIPv6Range2CIDR(t *testing.T) {
 			expected: []string{
 				"0.0.0.0/31",
 			},
+
+			reducedMaskSize: true,
 		},
 		{
 			// Worst IPv4 case
-			startIP:     net.ParseIP("0.0.0.1"),
-			endIP:       net.ParseIP("255.255.255.254"),
-			numExpected: 62,
+			startIP:         net.ParseIP("0.0.0.1"),
+			endIP:           net.ParseIP("255.255.255.254"),
+			numExpected:     62,
+			reducedMaskSize: true,
 		},
 		{
 			// Worst IPv6 case
@@ -153,21 +179,47 @@ func TestIPv6Range2CIDR(t *testing.T) {
 		},
 	}
 
-	var cidrs []net.IPNet
+	envs := []struct {
+		label           string
+		getRange        func(startIP, endIP net.IP) []net.IPNet
+		mayReturn32bits bool
+	}{
+		{
+			label:    "IPv6Range2CIDR",
+			getRange: cidr.IPv6Range2CIDR,
+		},
+		{
+			label:           "IPRange2CIDR",
+			getRange:        cidr.IPRange2CIDR,
+			mayReturn32bits: true,
+		},
+	}
 
 	for _, testCase := range testCases {
-		t.Run(fmt.Sprintf("Range_%s-%s-%d", testCase.startIP, testCase.endIP, testCase.numExpected), func(t *testing.T) {
-			cidrs = cidr.IPv6Range2CIDR(testCase.startIP, testCase.endIP)
-			if testCase.numExpected != len(cidrs) {
-				t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
-			} else if len(testCase.expected) != 0 && len(testCase.expected) == len(cidrs) {
-				for i, expected := range testCase.expected {
-					if expected != cidrs[i].String() {
-						t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidrs[i].String())
+		for _, env := range envs {
+			t.Run(fmt.Sprintf("Range-%s_%s-%s-%d", env.label, testCase.startIP, testCase.endIP, testCase.numExpected), func(t *testing.T) {
+				cidrs := env.getRange(testCase.startIP, testCase.endIP)
+
+				for _, cidr := range cidrs {
+					_, bits := cidr.Mask.Size()
+					if testCase.reducedMaskSize && env.mayReturn32bits {
+						assert.Equal(t, 32, bits)
+					} else {
+						assert.Equal(t, 128, bits)
 					}
 				}
-			}
-		})
+
+				if testCase.numExpected != len(cidrs) {
+					t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
+				} else if len(testCase.expected) != 0 && len(testCase.expected) == len(cidrs) {
+					for i, expected := range testCase.expected {
+						if expected != cidrs[i].String() {
+							t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidrs[i].String())
+						}
+					}
+				}
+			})
+		}
 	}
 }
 
