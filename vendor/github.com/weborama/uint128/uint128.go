@@ -1,8 +1,8 @@
-// Copyright 2017 Weborama. All rights reserved.
+// Copyright 2018 Weborama. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package uint128
+package uint128 // import "github.com/weborama/uint128"
 
 //go:generate go run make_tables.go
 

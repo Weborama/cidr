@@ -53,12 +53,12 @@ func min(a, b int) int {
 // IPRange2CIDR returns a slice of CIDR for the provided IP range.
 // Returns nil if IP order is wrong.
 func IPRange2CIDR(startIP, endIP net.IP) []net.IPNet {
-	startIP, endIP = startIP.To16(), endIP.To16()
-	if len(startIP) == net.IPv4len && len(endIP) == net.IPv4len {
-		return IPv4Range2CIDR(startIP, endIP)
+	//startIP, endIP = startIP.To16(), endIP.To16()
+	if startIPv4, endIPv4 := startIP.To4(), endIP.To4(); startIPv4 != nil && endIPv4 != nil {
+		return IPv4Range2CIDR(startIPv4, endIPv4)
 	}
-	if startIP != nil && endIP != nil {
-		return IPv6Range2CIDR(startIP, endIP)
+	if startIPv6, endIPv6 := startIP.To16(), endIP.To16(); startIPv6 != nil && endIPv6 != nil {
+		return IPv6Range2CIDR(startIPv6, endIPv6)
 	}
 	return nil
 }
