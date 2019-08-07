@@ -112,25 +112,30 @@ func TestIPv4Range2CIDR(t *testing.T) {
 
 	for _, testCase := range testCases {
 		for _, env := range envs {
-			t.Run(fmt.Sprintf("Range-%s_%s-%s-%d", env.label, testCase.startIP, testCase.endIP, testCase.numExpected), func(t *testing.T) {
-				cidrs := env.getRange(testCase.startIP, testCase.endIP)
+			testCase := testCase
+			env := env
+			t.Run(
+				fmt.Sprintf("Range-%s_%s-%s-%d", env.label, testCase.startIP, testCase.endIP, testCase.numExpected),
+				func(t *testing.T) {
+					cidrs := env.getRange(testCase.startIP, testCase.endIP)
 
-				for _, cidr := range cidrs {
-					_, bits := cidr.Mask.Size()
-					assert.Equal(t, 32, bits)
-				}
+					for _, cidr := range cidrs {
+						_, bits := cidr.Mask.Size()
+						assert.Equal(t, 32, bits)
+					}
 
-				if testCase.numExpected != len(cidrs) {
-					t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
-				} else if len(testCase.expected) != 0 && assert.Equal(t, len(testCase.expected), len(cidrs)) {
-					for i, expected := range testCase.expected {
-						cidr := cidrs[i]
-						if expected != cidr.String() {
-							t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidr.String())
+					if testCase.numExpected != len(cidrs) {
+						t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
+					} else if len(testCase.expected) != 0 && assert.Equal(t, len(testCase.expected), len(cidrs)) {
+						for i, expected := range testCase.expected {
+							cidr := cidrs[i]
+							if expected != cidr.String() {
+								t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidr.String())
+							}
 						}
 					}
-				}
-			})
+				},
+			)
 		}
 	}
 }
@@ -197,28 +202,33 @@ func TestIPv6Range2CIDR(t *testing.T) {
 
 	for _, testCase := range testCases {
 		for _, env := range envs {
-			t.Run(fmt.Sprintf("Range-%s_%s-%s-%d", env.label, testCase.startIP, testCase.endIP, testCase.numExpected), func(t *testing.T) {
-				cidrs := env.getRange(testCase.startIP, testCase.endIP)
+			testCase := testCase
+			env := env
+			t.Run(
+				fmt.Sprintf("Range-%s_%s-%s-%d", env.label, testCase.startIP, testCase.endIP, testCase.numExpected),
+				func(t *testing.T) {
+					cidrs := env.getRange(testCase.startIP, testCase.endIP)
 
-				for _, cidr := range cidrs {
-					_, bits := cidr.Mask.Size()
-					if testCase.reducedMaskSize && env.mayReturn32bits {
-						assert.Equal(t, 32, bits)
-					} else {
-						assert.Equal(t, 128, bits)
-					}
-				}
-
-				if testCase.numExpected != len(cidrs) {
-					t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
-				} else if len(testCase.expected) != 0 && len(testCase.expected) == len(cidrs) {
-					for i, expected := range testCase.expected {
-						if expected != cidrs[i].String() {
-							t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidrs[i].String())
+					for _, cidr := range cidrs {
+						_, bits := cidr.Mask.Size()
+						if testCase.reducedMaskSize && env.mayReturn32bits {
+							assert.Equal(t, 32, bits)
+						} else {
+							assert.Equal(t, 128, bits)
 						}
 					}
-				}
-			})
+
+					if testCase.numExpected != len(cidrs) {
+						t.Fatalf("CIDRs expected %d, got %d\n%s", testCase.numExpected, len(cidrs), spew.Sdump(cidrs))
+					} else if len(testCase.expected) != 0 && len(testCase.expected) == len(cidrs) {
+						for i, expected := range testCase.expected {
+							if expected != cidrs[i].String() {
+								t.Fatalf("CIDR number %d, expected %s, got %s", i, expected, cidrs[i].String())
+							}
+						}
+					}
+				},
+			)
 		}
 	}
 }
@@ -289,6 +299,7 @@ func BenchmarkIPv4Range2CIDR(b *testing.B) {
 	}
 	var cidrs []net.IPNet
 	for _, benchmarkCase := range benchmarkCases {
+		benchmarkCase := benchmarkCase
 		b.Run(fmt.Sprintf("Range_%s-%s", benchmarkCase.startIP, benchmarkCase.endIP), func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				cidrs = cidr.IPv4Range2CIDR(benchmarkCase.startIP, benchmarkCase.endIP)
@@ -321,6 +332,7 @@ func BenchmarkIPv6Range2CIDR(b *testing.B) {
 	}
 	var cidrs []net.IPNet
 	for _, benchmarkCase := range benchmarkCases {
+		benchmarkCase := benchmarkCase
 		b.Run(fmt.Sprintf("Range_%s-%s", benchmarkCase.startIP, benchmarkCase.endIP), func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				cidrs = cidr.IPv6Range2CIDR(benchmarkCase.startIP, benchmarkCase.endIP)

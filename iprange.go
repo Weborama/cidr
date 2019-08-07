@@ -132,7 +132,7 @@ func IPv6Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 			IP:   Uint128ToIPv6(start),
 			Mask: net.CIDRMask(128-currentBits, 128),
 		})
-		start = start.Add(uint128.Incr(uint128.Zero).ShiftLeft(uint(currentBits)))
+		start = start.Add(uint128.Incr(uint128.Zero()).ShiftLeft(uint(currentBits)))
 	}
 
 	if len(ipNetSlice) == 0 {
