@@ -141,3 +141,40 @@ func IPv6Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 
 	return ipNetSlice
 }
+
+// EachIPv4Range2CIDR will execute the callback parameter with each CIDR
+// for the provided IPv4 range
+// Returns the number of CIDRs generated
+// Returns 0 if IP order is wrong
+// Returns 0 if provided IPs are not IPv4
+func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) int {
+	// Ensure IPs are IPV4
+	startIP, endIP = startIP.To4(), endIP.To4()
+	if startIP == nil || endIP == nil {
+		return 0
+	}
+
+	// Convert to uint32
+	start := IPv4ToUint32(startIP)
+	end := IPv4ToUint32(endIP)
+	if start > end {
+		return 0
+	}
+
+	var zeroBits, currentBits, n int
+	var cidr net.IPNet
+	for start <= end {
+		zeroBits = bits.TrailingZeros32(start)
+
+		currentBits = min(32-bits.LeadingZeros32(end-start+1)-1, zeroBits)
+		cidr.IP = Uint32ToIPv4(start)
+		cidr.Mask = net.CIDRMask(32-currentBits, 32) // TODO perhaps we can cache all 32 possible results?
+
+		callback(cidr)
+
+		start += 1 << uint(currentBits)
+		n++
+	}
+
+	return n
+}
