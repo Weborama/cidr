@@ -61,7 +61,6 @@ func IPRange2CIDR(startIP, endIP net.IP) []net.IPNet {
 }
 
 // EachIPRange2CIDR execute the callback for each CIDR for the provided IP range.
-// Return 0 if IP order is wrong
 func EachIPRange2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	if startIPv4, endIPv4 := startIP.To4(), endIP.To4(); startIPv4 != nil && endIPv4 != nil {
 		EachIPv4Range2CIDR(startIPv4, endIPv4, callback)
