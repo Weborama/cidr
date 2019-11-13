@@ -62,20 +62,19 @@ func IPRange2CIDR(startIP, endIP net.IP) []net.IPNet {
 
 // EachIPRange2CIDR execute the callback for each CIDR for the provided IP range.
 // Return 0 if IP order is wrong
-func EachIPRange2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) int {
+func EachIPRange2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	if startIPv4, endIPv4 := startIP.To4(), endIP.To4(); startIPv4 != nil && endIPv4 != nil {
-		return EachIPv4Range2CIDR(startIPv4, endIPv4, callback)
+		EachIPv4Range2CIDR(startIPv4, endIPv4, callback)
+	} else {
+		EachIPv6Range2CIDR(startIP.To16(), endIP.To16(), callback)
 	}
-
-	return EachIPv6Range2CIDR(startIP.To16(), endIP.To16(), callback)
-
 }
 
 // IPv4Range2CIDR returns a slice of CIDR for the provided IPv4 range.
 // Returns nil if IP order is wrong
 // Returns nil if provided IPs are not IPv4
 func IPv4Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
-	_ = EachIPv4Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
+	EachIPv4Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
 		ipNetSlice = append(ipNetSlice, cidr)
 	})
 
@@ -86,7 +85,7 @@ func IPv4Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 // Returns nil if IP order is wrong
 // Returns nil if provided IPs are not IPv4
 func IPv6Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
-	_ = EachIPv6Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
+	EachIPv6Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
 		ipNetSlice = append(ipNetSlice, cidr)
 	})
 
@@ -95,25 +94,25 @@ func IPv6Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 
 // EachIPv4Range2CIDR will execute the callback parameter with each CIDR
 // for the provided IPv4 range
-// Returns the number of CIDRs generated
-// Returns 0 if IP order is wrong
-// Returns 0 if provided IPs are not IPv4
-func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) int {
+func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	// Ensure IPs are IPV4
 	startIP, endIP = startIP.To4(), endIP.To4()
 	if startIP == nil || endIP == nil {
-		return 0
+		return
 	}
 
 	// Convert to uint32
 	start := IPv4ToUint32(startIP)
 	end := IPv4ToUint32(endIP)
 	if start > end {
-		return 0
+		return
 	}
 
-	var zeroBits, currentBits, n int
-	var cidr net.IPNet
+	var (
+		zeroBits    int
+		currentBits int
+		cidr        net.IPNet
+	)
 	for start <= end {
 		zeroBits = bits.TrailingZeros32(start)
 
@@ -124,35 +123,32 @@ func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) int {
 		callback(cidr)
 
 		start += 1 << uint(currentBits)
-		n++
 	}
-
-	return n
 }
 
 // EachIPv6Range2CIDR will execute the callback parameter with each CIDR
 // for the provided IPv6 range
-// Returns the number of CIDRs generated
-// Returns 0 if IP order is wrong
-// Returns 0 if provided IPs are not IPv6
-func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) int {
+func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	// Ensure IPs are IPV6
 	if len(startIP) != net.IPv6len || len(endIP) != net.IPv6len {
-		return 0
+		return
 	}
 
 	// Convert to uint128
 	start := IPv6ToUint128(startIP)
 	end := IPv6ToUint128(endIP)
 	if start.Cmp(end) > 0 {
-		return 0
+		return
 	}
 
 	// TODO: Find number of CIDRs for a given address range and preallocate slice
 	// Worst case is ipNetSlice = make([]net.IPNet, 0, 128*2-2)
 	// QUESTION: Some way to preallocate net.IP and net.CIDRMask as well?
-	var zeroBits, currentBits, n int
-	var cidr net.IPNet
+	var (
+		zeroBits    int
+		currentBits int
+		cidr        net.IPNet
+	)
 	for start.Cmp(end) <= 0 {
 		zeroBits = uint128.TrailingZeros(start)
 
@@ -164,8 +160,5 @@ func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) int {
 		callback(cidr)
 
 		start = start.Add(uint128.Incr(uint128.Zero()).ShiftLeft(uint(currentBits)))
-		n++
 	}
-
-	return n
 }

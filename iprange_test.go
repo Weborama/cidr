@@ -112,7 +112,7 @@ func TestIPv4Range2CIDR(t *testing.T) {
 			label: "EachIPv4Range2CIDR",
 			getRange: func(startIP, endIP net.IP) []net.IPNet {
 				var cidrs []net.IPNet
-				_ = cidr.EachIPv4Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
+				cidr.EachIPv4Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
 					cidrs = append(cidrs, cidr)
 				})
 				return cidrs
@@ -122,7 +122,7 @@ func TestIPv4Range2CIDR(t *testing.T) {
 			label: "EachIPRange2CIDR",
 			getRange: func(startIP, endIP net.IP) []net.IPNet {
 				var cidrs []net.IPNet
-				_ = cidr.EachIPRange2CIDR(startIP, endIP, func(cidr net.IPNet) {
+				cidr.EachIPRange2CIDR(startIP, endIP, func(cidr net.IPNet) {
 					cidrs = append(cidrs, cidr)
 				})
 				return cidrs
@@ -222,7 +222,7 @@ func TestIPv6Range2CIDR(t *testing.T) {
 			label: "EachIPv6Range2CIDR",
 			getRange: func(startIP, endIP net.IP) []net.IPNet {
 				var cidrs []net.IPNet
-				_ = cidr.EachIPv6Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
+				cidr.EachIPv6Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
 					cidrs = append(cidrs, cidr)
 				})
 				return cidrs
@@ -232,7 +232,7 @@ func TestIPv6Range2CIDR(t *testing.T) {
 			label: "EachIPRange2CIDR",
 			getRange: func(startIP, endIP net.IP) []net.IPNet {
 				var cidrs []net.IPNet
-				_ = cidr.EachIPRange2CIDR(startIP, endIP, func(cidr net.IPNet) {
+				cidr.EachIPRange2CIDR(startIP, endIP, func(cidr net.IPNet) {
 					cidrs = append(cidrs, cidr)
 				})
 				return cidrs
