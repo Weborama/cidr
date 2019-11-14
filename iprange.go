@@ -64,12 +64,32 @@ func IPRange2CIDR(startIP, endIP net.IP) []net.IPNet {
 	return IPv6Range2CIDR(startIP.To16(), endIP.To16())
 }
 
+// AdaptCallbackToIPv4 func
+func AdaptCallbackToIPv4(callback func(net.IPNet)) func(uint32, int, int) {
+	return func(ip uint32, ones, bits int) {
+		callback(net.IPNet{
+			IP:   Uint32ToIPv4(ip),
+			Mask: net.CIDRMask(ones, bits),
+		})
+	}
+}
+
+// AdaptCallbackToIPv6 func
+func AdaptCallbackToIPv6(callback func(net.IPNet)) func(uint128.Uint128, int, int) {
+	return func(ip uint128.Uint128, ones, bits int) {
+		callback(net.IPNet{
+			IP:   Uint128ToIPv6(ip),
+			Mask: net.CIDRMask(ones, bits),
+		})
+	}
+}
+
 // EachIPRange2CIDR execute the callback for each CIDR for the provided IP range.
 func EachIPRange2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	if startIPv4, endIPv4 := startIP.To4(), endIP.To4(); startIPv4 != nil && endIPv4 != nil {
-		EachIPv4Range2CIDR(startIPv4, endIPv4, callback)
+		EachIPv4Range2CIDR(startIPv4, endIPv4, AdaptCallbackToIPv4(callback))
 	} else {
-		EachIPv6Range2CIDR(startIP.To16(), endIP.To16(), callback)
+		EachIPv6Range2CIDR(startIP.To16(), endIP.To16(), AdaptCallbackToIPv6(callback))
 	}
 }
 
@@ -77,8 +97,11 @@ func EachIPRange2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 // Returns nil if IP order is wrong
 // Returns nil if provided IPs are not IPv4
 func IPv4Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
-	EachIPv4Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
-		ipNetSlice = append(ipNetSlice, cidr)
+	EachIPv4Range2CIDR(startIP, endIP, func(ip uint32, ones, bits int) {
+		ipNetSlice = append(ipNetSlice, net.IPNet{
+			IP:   Uint32ToIPv4(ip),
+			Mask: net.CIDRMask(ones, bits),
+		})
 	})
 
 	return ipNetSlice
@@ -88,8 +111,11 @@ func IPv4Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 // Returns nil if IP order is wrong
 // Returns nil if provided IPs are not IPv4
 func IPv6Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
-	EachIPv6Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
-		ipNetSlice = append(ipNetSlice, cidr)
+	EachIPv6Range2CIDR(startIP, endIP, func(ip uint128.Uint128, ones, bits int) {
+		ipNetSlice = append(ipNetSlice, net.IPNet{
+			IP:   Uint128ToIPv6(ip),
+			Mask: net.CIDRMask(ones, bits),
+		})
 	})
 
 	return ipNetSlice
@@ -97,7 +123,7 @@ func IPv6Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 
 // EachIPv4Range2CIDR will execute the callback parameter with each CIDR
 // for the provided IPv4 range
-func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
+func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(ip uint32, ones, bits int)) {
 	// Ensure IPs are IPV4
 	startIP, endIP = startIP.To4(), endIP.To4()
 	if startIP == nil || endIP == nil {
@@ -115,17 +141,14 @@ func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	var (
 		zeroBits    int
 		currentBits int
-		cidr        net.IPNet
 	)
 
 	for start <= end {
 		zeroBits = bits.TrailingZeros32(start)
 
 		currentBits = min(32-bits.LeadingZeros32(end-start+1)-1, zeroBits)
-		cidr.IP = Uint32ToIPv4(start)
-		cidr.Mask = net.CIDRMask(32-currentBits, 32)
 
-		callback(cidr)
+		callback(start, 32-currentBits, 32)
 
 		start += 1 << uint(currentBits)
 	}
@@ -133,7 +156,7 @@ func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 
 // EachIPv6Range2CIDR will execute the callback parameter with each CIDR
 // for the provided IPv6 range
-func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
+func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(ip uint128.Uint128, ones, bits int)) {
 	// Ensure IPs are IPV6
 	if len(startIP) != net.IPv6len || len(endIP) != net.IPv6len {
 		return
@@ -153,7 +176,6 @@ func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	var (
 		zeroBits    int
 		currentBits int
-		cidr        net.IPNet
 	)
 
 	for start.Cmp(end) <= 0 {
@@ -161,10 +183,7 @@ func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 
 		currentBits = min(128-uint128.LeadingZeros(end.Sub(start).Incr())-1, zeroBits)
 
-		cidr.IP = Uint128ToIPv6(start)
-		cidr.Mask = net.CIDRMask(128-currentBits, 128)
-
-		callback(cidr)
+		callback(start, 128-currentBits, 128)
 
 		start = start.Add(uint128.Incr(uint128.Zero()).ShiftLeft(uint(currentBits)))
 	}
