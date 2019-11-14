@@ -17,6 +17,7 @@ func IPv4ToUint32(ip net.IP) uint32 {
 	if len(ip) == 16 {
 		return binary.BigEndian.Uint32(ip[12:16])
 	}
+
 	return binary.BigEndian.Uint32(ip)
 }
 
@@ -24,6 +25,7 @@ func IPv4ToUint32(ip net.IP) uint32 {
 func Uint32ToIPv4(i uint32) (ip net.IP) {
 	ip = make(net.IP, net.IPv4len)
 	binary.BigEndian.PutUint32(ip, i)
+
 	return ip
 }
 
@@ -40,6 +42,7 @@ func Uint128ToIPv6(x uint128.Uint128) (ip net.IP) {
 	ip = make(net.IP, net.IPv6len)
 	binary.BigEndian.PutUint64(ip[0:8], x.H)
 	binary.BigEndian.PutUint64(ip[8:16], x.L)
+
 	return ip
 }
 
@@ -47,6 +50,7 @@ func min(a, b int) int {
 	if a < b {
 		return a
 	}
+
 	return b
 }
 
@@ -103,6 +107,7 @@ func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	// Convert to uint32
 	start := IPv4ToUint32(startIP)
 	end := IPv4ToUint32(endIP)
+
 	if start > end {
 		return
 	}
@@ -112,6 +117,7 @@ func EachIPv4Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 		currentBits int
 		cidr        net.IPNet
 	)
+
 	for start <= end {
 		zeroBits = bits.TrailingZeros32(start)
 
@@ -136,11 +142,12 @@ func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	// Convert to uint128
 	start := IPv6ToUint128(startIP)
 	end := IPv6ToUint128(endIP)
+
 	if start.Cmp(end) > 0 {
 		return
 	}
 
-	// TODO: Find number of CIDRs for a given address range and preallocate slice
+	// XXX: Find number of CIDRs for a given address range and preallocate slice
 	// Worst case is ipNetSlice = make([]net.IPNet, 0, 128*2-2)
 	// QUESTION: Some way to preallocate net.IP and net.CIDRMask as well?
 	var (
@@ -148,6 +155,7 @@ func EachIPv6Range2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 		currentBits int
 		cidr        net.IPNet
 	)
+
 	for start.Cmp(end) <= 0 {
 		zeroBits = uint128.TrailingZeros(start)
 
