@@ -19,6 +19,7 @@ func TestRangeNotIPv4(t *testing.T) {
 	startIP := net.ParseIP("fc00::1")
 	endIP := net.ParseIP("fc00::2")
 	result := cidr.IPv4Range2CIDR(startIP, endIP)
+
 	if result != nil {
 		t.Fatal("Providing IPv6 addresses should return nil")
 	}
@@ -28,11 +29,13 @@ func TestRangeWrongOrder(t *testing.T) {
 	startIP := net.ParseIP("192.168.0.1")
 	endIP := net.ParseIP("192.168.0.2")
 	result := cidr.IPv4Range2CIDR(endIP, startIP)
+
 	if result != nil {
 		t.Fatal("Providing addresses in the wrong order should return nil")
 	}
 }
 
+//nolint:funlen
 func TestIPv4Range2CIDR(t *testing.T) {
 	testCases := []struct {
 		startIP     net.IP
@@ -108,6 +111,26 @@ func TestIPv4Range2CIDR(t *testing.T) {
 			label:    "IPRange2CIDR",
 			getRange: cidr.IPRange2CIDR,
 		},
+		{
+			label: "EachIPv4Range2CIDR",
+			getRange: func(startIP, endIP net.IP) []net.IPNet {
+				var cidrs []net.IPNet
+				cidr.EachIPv4Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
+					cidrs = append(cidrs, cidr)
+				})
+				return cidrs
+			},
+		},
+		{
+			label: "EachIPRange2CIDR",
+			getRange: func(startIP, endIP net.IP) []net.IPNet {
+				var cidrs []net.IPNet
+				cidr.EachIPRange2CIDR(startIP, endIP, func(cidr net.IPNet) {
+					cidrs = append(cidrs, cidr)
+				})
+				return cidrs
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -140,6 +163,7 @@ func TestIPv4Range2CIDR(t *testing.T) {
 	}
 }
 
+//nolint:funlen
 func TestIPv6Range2CIDR(t *testing.T) {
 	testCases := []struct {
 		startIP         net.IP
@@ -198,6 +222,27 @@ func TestIPv6Range2CIDR(t *testing.T) {
 			getRange:        cidr.IPRange2CIDR,
 			mayReturn32bits: true,
 		},
+		{
+			label: "EachIPv6Range2CIDR",
+			getRange: func(startIP, endIP net.IP) []net.IPNet {
+				var cidrs []net.IPNet
+				cidr.EachIPv6Range2CIDR(startIP, endIP, func(cidr net.IPNet) {
+					cidrs = append(cidrs, cidr)
+				})
+				return cidrs
+			},
+		},
+		{
+			label: "EachIPRange2CIDR",
+			getRange: func(startIP, endIP net.IP) []net.IPNet {
+				var cidrs []net.IPNet
+				cidr.EachIPRange2CIDR(startIP, endIP, func(cidr net.IPNet) {
+					cidrs = append(cidrs, cidr)
+				})
+				return cidrs
+			},
+			mayReturn32bits: true,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -235,19 +280,24 @@ func TestIPv6Range2CIDR(t *testing.T) {
 
 func BenchmarkIPv4ToUint32(b *testing.B) {
 	ip := net.ParseIP("128.128.128.128")
+
 	var i uint32
 	for n := 0; n < b.N; n++ {
 		i = cidr.IPv4ToUint32(ip)
 	}
+
 	_ = i
 }
 
 func BenchmarkIPv6ToUint128(b *testing.B) {
 	ip := net.ParseIP("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
+
 	var i uint128.Uint128
+
 	for n := 0; n < b.N; n++ {
 		i = cidr.IPv6ToUint128(ip)
 	}
+
 	_ = i
 }
 
@@ -262,10 +312,13 @@ func BenchmarkIPv6ToUint128(b *testing.B) {
 
 func BenchmarkUint32ToIPv4(b *testing.B) {
 	var i uint32 = 325551551
+
 	var ip net.IP
+
 	for n := 0; n < b.N; n++ {
 		ip = cidr.Uint32ToIPv4(i)
 	}
+
 	_ = ip
 }
 
@@ -274,10 +327,13 @@ func BenchmarkUint128ToIPv6(b *testing.B) {
 		H: 2306139570357600256,
 		L: 151930230829876,
 	}
+
 	var ip net.IP
+
 	for n := 0; n < b.N; n++ {
 		ip = cidr.Uint128ToIPv6(i)
 	}
+
 	_ = ip
 }
 
@@ -297,7 +353,9 @@ func BenchmarkIPv4Range2CIDR(b *testing.B) {
 			net.ParseIP("255.255.255.254"),
 		},
 	}
+
 	var cidrs []net.IPNet
+
 	for _, benchmarkCase := range benchmarkCases {
 		benchmarkCase := benchmarkCase
 		b.Run(fmt.Sprintf("Range_%s-%s", benchmarkCase.startIP, benchmarkCase.endIP), func(b *testing.B) {
@@ -305,7 +363,15 @@ func BenchmarkIPv4Range2CIDR(b *testing.B) {
 				cidrs = cidr.IPv4Range2CIDR(benchmarkCase.startIP, benchmarkCase.endIP)
 			}
 		})
+		b.Run(fmt.Sprintf("Each/Range_%s-%s", benchmarkCase.startIP, benchmarkCase.endIP), func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				cidr.EachIPv4Range2CIDR(benchmarkCase.startIP, benchmarkCase.endIP, func(r net.IPNet) {
+					_ = r
+				})
+			}
+		})
 	}
+
 	_ = cidrs
 }
 
@@ -330,7 +396,9 @@ func BenchmarkIPv6Range2CIDR(b *testing.B) {
 			net.ParseIP("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFE"),
 		},
 	}
+
 	var cidrs []net.IPNet
+
 	for _, benchmarkCase := range benchmarkCases {
 		benchmarkCase := benchmarkCase
 		b.Run(fmt.Sprintf("Range_%s-%s", benchmarkCase.startIP, benchmarkCase.endIP), func(b *testing.B) {
@@ -338,6 +406,14 @@ func BenchmarkIPv6Range2CIDR(b *testing.B) {
 				cidrs = cidr.IPv6Range2CIDR(benchmarkCase.startIP, benchmarkCase.endIP)
 			}
 		})
+		b.Run(fmt.Sprintf("Each/Range_%s-%s", benchmarkCase.startIP, benchmarkCase.endIP), func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				cidr.EachIPv6Range2CIDR(benchmarkCase.startIP, benchmarkCase.endIP, func(r net.IPNet) {
+					_ = r
+				})
+			}
+		})
 	}
+
 	_ = cidrs
 }
