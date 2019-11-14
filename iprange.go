@@ -87,16 +87,13 @@ func AdaptCallbackToIPv6(callback func(net.IPNet)) func(uint128.Uint128, int, in
 // EachIPRange2CIDR execute the callback for each CIDR for the provided IP range.
 func EachIPRange2CIDR(startIP, endIP net.IP, callback func(net.IPNet)) {
 	if startIPv4, endIPv4 := startIP.To4(), endIP.To4(); startIPv4 != nil && endIPv4 != nil {
-		// Convert to uint32
-		start := IPv4ToUint32(startIP)
-		end := IPv4ToUint32(endIP)
+		start := IPv4ToUint32(startIPv4)
+		end := IPv4ToUint32(endIPv4)
 
 		EachIPv4Range2CIDR(start, end, AdaptCallbackToIPv4(callback))
-
 	} else if startIPv6, endIPv6 := startIP.To16(), endIP.To16(); startIPv6 != nil && endIPv6 != nil {
-		// Convert to uint128
-		start := IPv6ToUint128(startIP)
-		end := IPv6ToUint128(endIP)
+		start := IPv6ToUint128(startIPv6)
+		end := IPv6ToUint128(endIPv6)
 
 		EachIPv6Range2CIDR(start, end, AdaptCallbackToIPv6(callback))
 	}
