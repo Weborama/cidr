@@ -12,9 +12,16 @@ import (
 	"github.com/weborama/uint128"
 )
 
+const (
+	numIPv4Bits  = 32
+	numIPv6Bits  = 128
+	numIPv6Bytes = 16
+)
+
 // IPv4ToUint32 converts an IPv4 representation to uint32
 func IPv4ToUint32(ip net.IP) uint32 {
-	if len(ip) == 16 {
+	if len(ip) == numIPv6Bytes {
+		// Extract the 4 last bytes if we have an IPv6 length IP address
 		return binary.BigEndian.Uint32(ip[12:16])
 	}
 
@@ -162,11 +169,11 @@ func EachIPv4Range2CIDR(start, end uint32, callback func(ip uint32, ones, bits i
 	for start <= end {
 		zeroBits = bits.TrailingZeros32(start)
 
-		currentBits = min(32-bits.LeadingZeros32(end-start+1)-1, zeroBits)
+		currentBits = min(numIPv4Bits-bits.LeadingZeros32(end-start+1)-1, zeroBits) // nolint:gomnd
 
-		callback(start, 32-currentBits, 32)
+		callback(start, numIPv4Bits-currentBits, numIPv4Bits)
 
-		start += 1 << uint(currentBits)
+		start += 1 << uint(currentBits) // nolint:gomnd
 	}
 }
 
@@ -188,9 +195,9 @@ func EachIPv6Range2CIDR(start, end uint128.Uint128, callback func(ip uint128.Uin
 	for start.Cmp(end) <= 0 {
 		zeroBits = uint128.TrailingZeros(start)
 
-		currentBits = min(128-uint128.LeadingZeros(end.Sub(start).Incr())-1, zeroBits)
+		currentBits = min(numIPv6Bits-uint128.LeadingZeros(end.Sub(start).Incr())-1, zeroBits) // nolint:gomnd
 
-		callback(start, 128-currentBits, 128)
+		callback(start, numIPv6Bits-currentBits, numIPv6Bits)
 
 		start = start.Add(uint128.Incr(uint128.Zero()).ShiftLeft(uint(currentBits)))
 	}

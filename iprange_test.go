@@ -35,7 +35,7 @@ func TestRangeWrongOrder(t *testing.T) {
 	}
 }
 
-//nolint:funlen
+// nolint:funlen,gomnd
 func TestIPv4Range2CIDR(t *testing.T) {
 	testCases := []struct {
 		startIP     net.IP
@@ -166,7 +166,7 @@ func TestIPv4Range2CIDR(t *testing.T) {
 	}
 }
 
-//nolint:funlen
+// nolint:funlen,gocognit,gomnd
 func TestIPv6Range2CIDR(t *testing.T) {
 	testCases := []struct {
 		startIP         net.IP
@@ -329,6 +329,7 @@ func BenchmarkUint32ToIPv4(b *testing.B) {
 }
 
 func BenchmarkUint128ToIPv6(b *testing.B) {
+	// nolint:gomnd
 	i := uint128.Uint128{
 		H: 2306139570357600256,
 		L: 151930230829876,
