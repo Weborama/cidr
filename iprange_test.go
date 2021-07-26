@@ -97,6 +97,15 @@ func TestIPv4Range2CIDR(t *testing.T) {
 			endIP:       net.ParseIP("255.255.255.254"),
 			numExpected: 62,
 		},
+		{
+			// Issue: https://github.com/Weborama/cidr/issues/7
+			startIP:     net.ParseIP("255.255.255.0"),
+			endIP:       net.ParseIP("255.255.255.255"),
+			numExpected: 1,
+			expected: []string{
+				"255.255.255.0/24",
+			},
+		},
 	}
 
 	envs := []struct {
@@ -209,6 +218,16 @@ func TestIPv6Range2CIDR(t *testing.T) {
 			endIP:       net.ParseIP("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFE"),
 			numExpected: 254,
 		},
+		{
+			// buggy IPv6 case
+			startIP:       net.ParseIP("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:0"),
+			endIP:       net.ParseIP("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"),
+			numExpected: 1,
+			expected: []string{
+				"ffff:ffff:ffff:ffff:ffff:ffff:ffff:0/112",
+			},
+		},
+
 	}
 
 	envs := []struct {

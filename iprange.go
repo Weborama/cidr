@@ -166,7 +166,8 @@ func EachIPv4Range2CIDR(start, end uint32, callback func(ip uint32, ones, bits i
 		currentBits int
 	)
 
-	for start <= end {
+	originalStart := start
+	for start <= end && originalStart <= start {
 		zeroBits = bits.TrailingZeros32(start)
 
 		currentBits = min(numIPv4Bits-bits.LeadingZeros32(end-start+1)-1, zeroBits) // nolint:gomnd
@@ -192,7 +193,8 @@ func EachIPv6Range2CIDR(start, end uint128.Uint128, callback func(ip uint128.Uin
 		currentBits int
 	)
 
-	for start.Cmp(end) <= 0 {
+	originalStart := start
+	for start.Cmp(end) <= 0 && originalStart.Cmp(start) <= 0 {
 		zeroBits = uint128.TrailingZeros(start)
 
 		currentBits = min(numIPv6Bits-uint128.LeadingZeros(end.Sub(start).Incr())-1, zeroBits) // nolint:gomnd
