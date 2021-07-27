@@ -219,15 +219,14 @@ func TestIPv6Range2CIDR(t *testing.T) {
 			numExpected: 254,
 		},
 		{
-			// buggy IPv6 case
-			startIP:       net.ParseIP("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:0"),
+			// issue #7 IPv6 case
+			startIP:     net.ParseIP("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:0"),
 			endIP:       net.ParseIP("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"),
 			numExpected: 1,
 			expected: []string{
 				"ffff:ffff:ffff:ffff:ffff:ffff:ffff:0/112",
 			},
 		},
-
 	}
 
 	envs := []struct {
