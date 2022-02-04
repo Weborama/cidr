@@ -1,41 +1,99 @@
+max-issues-per-linter: 0
+max-same-issues: 0
+linters-settings:
+  gofumpt:
+    extra-rules: true
+  govet:
+    check-shadowing: true
+    enable-all: true
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - gocognit
+        - funlen
+        - lll
+        - gomnd
 linters:
   enable:
+  - asciicheck
+  - bidichk
   - bodyclose
+  - containedctx
+  - contextcheck
+  - cyclop
   - deadcode
+  - decorder
   - depguard
   - dogsled
   - dupl
+  - durationcheck
   - errcheck
+  - errchkjson
+  - errname
+  - errorlint
+  - exhaustive
+  - exportloopref
+  - forbidigo
+  - forcetypeassert
   - funlen
+  - gci
   - gochecknoglobals
   - gochecknoinits
   - gocognit
   - goconst
   - gocritic
   - gocyclo
+  - godot
   - godox
+  - goerr113
   - gofmt
+  - gofumpt
+  - goheader
   - goimports
-  - golint
   - gomnd
+  - gomoddirectives
+  - gomodguard
+  - goprintffuncname
   - gosec
   - gosimple
   - govet
+  - grouper
+  - ifshort
+  - importas
   - ineffassign
-  - interfacer
+  - ireturn
   - lll
-  - maligned
+  - maintidx
+  - makezero
   - misspell
   - nakedret
+  - nestif
+  - nilerr
+  - nilnil
+  - nlreturn
+  - noctx
+  - nolintlint
+  - paralleltest
   - prealloc
-  - scopelint
+  - predeclared
+  - promlinter
+  - rowserrcheck
+  - sqlclosecheck
   - staticcheck
   - structcheck
-  - stylecheck
+  - tagliatelle
+  - tenv
+  - testpackage
+  - thelper
+  - tparallel
   - typecheck
   - unconvert
   - unparam
   - unused
   - varcheck
+  - varnamelen
+  - wastedassign
   - whitespace
+  - wrapcheck
   - wsl
