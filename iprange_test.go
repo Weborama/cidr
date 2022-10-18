@@ -184,7 +184,7 @@ func TestIPv4Range2CIDR(t *testing.T) {
 	}
 }
 
-//nolint: cyclop
+// nolint: cyclop
 func TestIPv6Range2CIDR(t *testing.T) {
 	t.Parallel()
 

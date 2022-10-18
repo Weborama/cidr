@@ -9,6 +9,8 @@ linters-settings:
     check-shadowing: true
     enable-all: true
 issues:
+  exclude:
+    - "directive `.+` should be written without leading space as `.+`"
   exclude-rules:
     - path: _test.go
       linters:
