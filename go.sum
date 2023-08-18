@@ -4,8 +4,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/weborama/uint128 v0.7.1 h1:WCL5/TmtqXW9TIC6LK9iokD/VgsSga/j0CgHMIpiAlg=
-github.com/weborama/uint128 v0.7.1/go.mod h1:c/sWscOdxZyf4JGjkvCyLNvTRAtWrtx+BFkMzm6KuU8=
+github.com/weborama/uint128 v0.7.2 h1:HuXRXJ+G9dqNWVqkwM4a5AtSy9CNNJlxhs9LJTxXJVQ=
+github.com/weborama/uint128 v0.7.2/go.mod h1:ipduT55D5pbkmzU+9U/2PnOSf+IZKHWWTYcDYvRJv28=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
