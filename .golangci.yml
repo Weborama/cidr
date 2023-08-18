@@ -3,8 +3,6 @@ max-same-issues: 0
 linters-settings:
   gofumpt:
     extra-rules: true
-  goimports:
-    local-prefixes: gitlab.nereides.weborama.com
   govet:
     check-shadowing: true
     enable-all: true
@@ -12,7 +10,7 @@ issues:
   exclude:
     - "directive `.+` should be written without leading space as `.+`"
   exclude-rules:
-    - path: _test.go
+    - path: "_test.go$"
       linters:
         - gocognit
         - funlen
@@ -20,8 +18,14 @@ issues:
         - gomnd
         - maintidx
         - exhaustruct
-    - path: _test.go
+    - path: "_test.go$"
       text: "fieldalignment: struct ((with .+ pointer bytes)|(of size .+)) could be .+"
+      linters:
+        - govet
+    # Exclude `lll` issues for long lines with `go:generate`.
+    - linters:
+        - lll
+      source: "^//go:generate "
 linters:
   enable:
     - asasalint
@@ -47,6 +51,8 @@ linters:
     - forbidigo
     - forcetypeassert
     - funlen
+    - ginkgolinter
+    - gocheckcompilerdirectives
     - gochecknoglobals
     - gochecknoinits
     - gocognit
@@ -66,6 +72,7 @@ linters:
     - goprintffuncname
     - gosec
     - gosimple
+    - gosmopolitan
     - govet
     - grouper
     - importas
@@ -76,7 +83,9 @@ linters:
     - loggercheck
     - maintidx
     - makezero
+    - mirror
     - misspell
+    - musttag
     - nakedret
     - nestif
     - nilerr
@@ -95,13 +104,13 @@ linters:
     - sqlclosecheck
     - staticcheck
     - stylecheck
+    - tagalign
     - tagliatelle
     - tenv
     - testableexamples
     - testpackage
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
     - unused
@@ -111,3 +120,4 @@ linters:
     - whitespace
     - wrapcheck
     - wsl
+    - zerologlint
