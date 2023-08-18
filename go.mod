@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/stretchr/testify v1.8.4
-	github.com/weborama/uint128 v0.7.1
+	github.com/weborama/uint128 v0.7.2
 )
 
 require (
