@@ -120,6 +120,9 @@ func IPv4Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 	start := IPv4ToUint32(startIP)
 	end := IPv4ToUint32(endIP)
 
+	// XXX: Find number of CIDRs for a given address range and preallocate slice
+	// Worst case is ipNetSlice = make([]net.IPNet, 0, 32*2-2)
+	// QUESTION: Some way to preallocate net.IP and net.CIDRMask as well?
 	EachIPv4Range2CIDR(start, end, func(ip uint32, ones, bits int) {
 		ipNetSlice = append(ipNetSlice, net.IPNet{
 			IP:   Uint32ToIPv4(ip),
@@ -144,6 +147,9 @@ func IPv6Range2CIDR(startIP, endIP net.IP) (ipNetSlice []net.IPNet) {
 	start := IPv6ToUint128(startIP)
 	end := IPv6ToUint128(endIP)
 
+	// XXX: Find number of CIDRs for a given address range and preallocate slice
+	// Worst case is ipNetSlice = make([]net.IPNet, 0, 128*2-2)
+	// QUESTION: Some way to preallocate net.IP and net.CIDRMask as well?
 	EachIPv6Range2CIDR(start, end, func(ip uint128.Uint128, ones, bits int) {
 		ipNetSlice = append(ipNetSlice, net.IPNet{
 			IP:   Uint128ToIPv6(ip),
@@ -186,9 +192,6 @@ func EachIPv6Range2CIDR(start, end uint128.Uint128, callback func(ip uint128.Uin
 		return
 	}
 
-	// XXX: Find number of CIDRs for a given address range and preallocate slice
-	// Worst case is ipNetSlice = make([]net.IPNet, 0, 128*2-2)
-	// QUESTION: Some way to preallocate net.IP and net.CIDRMask as well?
 	var (
 		zeroBits    int
 		currentBits int
