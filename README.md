@@ -1,5 +1,6 @@
 # github.com/weborama/cidr
 
+[![Godoc for weborama/cidr](https://pkg.go.dev/badge/github.com/weborama/cidr)](https://pkg.go.dev/github.com/weborama/cidr)
 [![Go Report Card](https://goreportcard.com/badge/github.com/weborama/cidr)](https://goreportcard.com/report/github.com/weborama/cidr)
 [![Go](https://github.com/Weborama/cidr/actions/workflows/go.yml/badge.svg)](https://github.com/Weborama/cidr/actions/workflows/go.yml)
 [![golangci-lint](https://github.com/Weborama/cidr/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Weborama/cidr/actions/workflows/golangci-lint.yml)
